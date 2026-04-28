@@ -1,0 +1,15 @@
+# build outputs
+build/
+
+# build systems
+CmakeCache.txt
+
+# IDE settings
+.vscode
+
+# Misc
+*.log
+*.dSYM/
+.DS_Store
+Thumbs.db
+*.tmp

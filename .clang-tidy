@@ -1,0 +1,73 @@
+# .clang-tidy — clang-tidy configuration
+#
+# Reference: https://clang.llvm.org/extra/clang-tidy/
+# To run manually:   clang-tidy path/to/file.cpp -p build/debug
+# To run on every build: see CMAKE_CXX_CLANG_TIDY (research that — there are
+#                        good reasons to NOT do this, especially for big trees).
+#
+# How the Checks string works
+# ---------------------------
+# clang-tidy ships hundreds of lints, organized into "check groups" by prefix.
+# The Checks field is a comma-separated list, evaluated in order:
+#   '-*'                  disables everything (good starting point)
+#   'group-*'             enables an entire group
+#   '-group-some-check'   disables a specific check inside an enabled group
+#
+# RESEARCH: which of these groups do you actually want, and why?
+# Read the descriptions on the clang-tidy "Checks" docs page before turning each on.
+#
+#   bugprone-*           — likely-bug patterns. Almost always worth enabling.
+#   modernize-*          — pushes code toward modern C++ idioms (auto, nullptr,
+#                          ranged for, override, etc.). Some are aggressive.
+#   performance-*        — runtime perf smells (unnecessary copies, etc.)
+#   readability-*        — style/clarity. NOTE: some checks duplicate or
+#                          conflict with .clang-format — be intentional.
+#   cppcoreguidelines-*  — Bjarne/Herb's Core Guidelines. Opinionated; some
+#                          are noisy or controversial. Read before enabling.
+#   clang-analyzer-*     — static analysis (data-flow), distinct from lints.
+#                          Catches different things; usually worth it.
+#   misc-*               — grab bag.
+#   portability-*        — cross-platform pitfalls.
+#   concurrency-*        — threading bugs (data races, deadlocks).
+#   cert-*               — CERT secure coding rules. Big overlap with bugprone-*.
+#   hicpp-*              — High Integrity C++. Big overlap with cppcoreguidelines-*.
+#                          Don't enable both blindly — you'll get duplicate diagnostics.
+#   google-* llvm-* fuchsia-* abseil-* android-* boost-* darwin-*
+#   linuxkernel-* mpi-* objc-* openmp-* zircon-*
+#                        — vendor/domain-specific. Leave off unless you're in
+#                          that ecosystem.
+#
+# TODO: replace the Checks line below. Suggested approach:
+#       1. start with '-*'
+#       2. enable 1-2 groups (bugprone-*, clang-analyzer-* are safe first picks)
+#       3. build the project, fix or silence warnings
+#       4. add another group, repeat
+#       Ramping up gradually beats turning everything on and drowning in noise.
+Checks: >
+  -*
+
+# RESEARCH: WarningsAsErrors promotes specific clang-tidy diagnostics to errors.
+# Question to answer: should EVERY enabled check be an error, or only a subset?
+# Think about how this interacts with -Werror in your compile flags, and what
+# happens in CI vs in your editor.
+WarningsAsErrors: ''
+
+# RESEARCH: clang-tidy lints every .cpp file you point it at, but it only lints
+# HEADERS that match this regex. Why does this matter the moment you depend on
+# any third-party library (system headers, fetched deps, etc.)?
+# TODO: write a regex that matches *only* headers under this project, and
+#       excludes anything in build/, third_party/, external/, etc.
+HeaderFilterRegex: ''
+
+# RESEARCH: many checks have per-check options. The big one to look at is
+# readability-identifier-naming, which can enforce naming conventions
+# (CamelCase classes, snake_case variables, k-prefixed constants, etc.).
+# TODO: pick one or two checks you care about and configure their options here.
+# Format:
+#   CheckOptions:
+#     - { key: <check-name>.<option-name>, value: <value> }
+CheckOptions: []
+
+# RESEARCH (open question, no TODO): some teams check this file in with very
+# strict settings; others keep it loose and rely on review. What fits a
+# learning project where YOU are the only reviewer?
