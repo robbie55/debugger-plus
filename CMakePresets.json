@@ -20,7 +20,7 @@
       "name": "debug",
       "inherits": "base",
       "displayName": "Debug",
-      "description": "RESEARCH: what *should* actually differ between Debug and Release builds? Think about: optimization level (-O0 vs -O2/-O3), debug info (-g, -g3, split-dwarf), assertions (NDEBUG), sanitizers (asan/ubsan/tsan/msan — which combine, which conflict), LTO, frame pointers. Decide before you fill cacheVariables.",
+      "description": "Default Debug build: -O0 -g, NDEBUG undefined (so assert() fires), no -DNDEBUG. All inherited from CMAKE_BUILD_TYPE=Debug toolchain defaults — see cmake-variables(7) for CMAKE_CXX_FLAGS_DEBUG.",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -30,7 +30,7 @@
       "name": "release",
       "inherits": "base",
       "displayName": "Release",
-      "description": "TODO: same exercise as debug — what does a release build need? Also research the OTHER two standard build types: RelWithDebInfo and MinSizeRel. When would you reach for those instead?",
+      "description": "Optimization level: -02/03 (TBD), Debug Info: None, Preprocessors: NDEBUG, disable assert()",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -49,12 +49,12 @@
     {
       "name": "debug",
       "configurePreset": "debug",
-      "description": "RESEARCH: testPresets drive `ctest --preset <name>`. You'll need enable_testing() and some add_test()/gtest_discover_tests calls in CMakeLists.txt before this does anything. Pick a test framework (GoogleTest? Catch2? doctest?) and decide how to pull it in (find_package vs FetchContent vs CPM vs vcpkg) — each has real tradeoffs.",
+      "description": "Builds in debug mode",
       "output": { "outputOnFailure": true }
     }
   ],
 
-  "_NOTES_TO_SELF": {
+  "vendor": {
     "_about_this_field": "JSON doesn't support comments, so this object exists only as a scratchpad for research prompts. CMake should ignore unknown top-level keys; if it warns, move these notes into per-preset `description` fields and delete this block.",
 
     "_ccache": "TODO: wire ccache in. Two common places: (1) here in cacheVariables on `base` — set CMAKE_C_COMPILER_LAUNCHER and CMAKE_CXX_COMPILER_LAUNCHER to \"ccache\". (2) inside CMakeLists.txt with find_program(CCACHE_PROGRAM ccache) + set(CMAKE_CXX_COMPILER_LAUNCHER ...). Read both approaches. Question to answer: what happens when both are set, and which scope do you actually want for a project that other people might clone?",
