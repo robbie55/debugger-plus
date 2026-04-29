@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-This is a terminal-based debugger frontend for C and C++ — a modern, keyboard-driven TUI that wraps GDB (and eventually LLDB) via the GDB/MI protocol. Think `lazygit` but for debugging: multi-pane layout (source, stack, locals, breakpoints), vim-style keybindings, and a clean event-driven architecture. The goal is to fill the gap between `gdb --tui` (functional but dated) and `gdbgui` (web-based, which I'm explicitly avoiding). Target platforms are Linux and macOS for v1.0; Windows is post-1.0.
+This is a terminal-based debugger frontend for C and C++ — a modern, keyboard-driven TUI that wraps LLDB via the liblldb C++ API (SBDebugger and friends). Think `lazygit` but for debugging: multi-pane layout (source, stack, locals, breakpoints), vim-style keybindings, and a clean event-driven architecture. The goal is to fill the gap between `gdb --tui` (functional but dated) and `gdbgui` (web-based, which I'm explicitly avoiding). Target platform is macOS for v1.0; Linux and Windows are post-v1.0.
 
 ## Who I Am and Why That Matters for How You Help Me
 
@@ -22,17 +22,17 @@ I'm a junior software engineer finishing a CS degree. I have strong web developm
 - **Language:** C++17 minimum, C++20 where it clearly helps (concepts, ranges, `std::format` if available).
 - **Build system:** CMake with presets. I want to learn modern CMake properly (target-based, no global flags).
 - **TUI library:** `ftxui` (chosen for being C++-idiomatic and easier to learn than `notcurses`).
-- **Backend:** GDB via the GDB/MI3 protocol, spawned as a subprocess. LLDB support is post-v1.0 and not a current concern — do not abstract for it prematurely.
+- **Backend:** LLDB via the `liblldb` C++ API (`SBDebugger`, `SBTarget`, `SBProcess`, etc.), used in-process. Linked against Homebrew's `llvm` formula (`/opt/homebrew/opt/llvm`) on Apple Silicon — *not* the Command Line Tools framework, which does not ship public headers. GDB and an MI-protocol path are post-v1.0 and not a current concern — do not abstract for them prematurely.
 - **Dependencies:** Keep them minimal. Vendored or fetched via CMake's `FetchContent`. No package manager (Conan/vcpkg) for v1.0.
-- **Testing:** Catch2 or doctest for unit tests. The MI parser especially must be heavily tested — that's the most fragile component.
-- **Tooling:** clang-format, clang-tidy, AddressSanitizer/UBSan in debug builds, ccache for fast iteration. CI on GitHub Actions for Linux + macOS.
+- **Testing:** Catch2 or doctest for unit tests. The wrapper layer around `liblldb` — lifetime/ownership of SB-objects, error propagation from `SBError`, and translating LLDB's async event broadcaster into our event loop — is the most fragile area and needs focused coverage.
+- **Tooling:** clang-format, clang-tidy, AddressSanitizer/UBSan in debug builds, ccache for fast iteration. CI on GitHub Actions for macOS (Apple Silicon).
 - **No web anything.** No JavaScript, no Electron, no embedded browser, no HTTP servers. This is a hard constraint.
 
 ## Architectural Principles I'm Trying to Internalize
 
 - **Single-threaded event loop first.** Threads only when there's a measured reason. I want to learn to reason about async I/O before reaching for concurrency.
-- **One `DebugSession` owns the GDB subprocess and authoritative state.** UI panes observe; they don't mutate shared state directly.
-- **RAII for everything that owns a resource** — file descriptors, subprocess handles, GDB state. No raw `new`/`delete` in application code.
+- **One `DebugSession` owns the `SBDebugger` instance, the active `SBTarget`/`SBProcess`, and authoritative state.** UI panes observe; they don't mutate shared state directly. LLDB's `SBListener` is the source of truth for process events — funnel them into our event loop in one place rather than letting panes subscribe directly.
+- **RAII for everything that owns a resource** — file descriptors, the LLDB debugger lifetime (`SBDebugger::Initialize` / `Terminate` must be paired), any threads we spawn. No raw `new`/`delete` in application code. Note that LLDB's `SB*` types are intentionally cheap value-handles holding an internal `shared_ptr` — copy them freely; don't `new` them.
 - **Value semantics by default**, references where appropriate, pointers (smart) only when ownership or polymorphism actually requires them.
 - **No premature abstraction.** I will be tempted to add plugin systems, config formats, and backend abstractions early. Talk me out of these until there's a concrete second use case.
 
@@ -51,3 +51,9 @@ When I share code, review it as if I were a junior on your team whom you're inve
 ## Open Source Context
 
 This repo is public from day one and intended to attract real users and contributors. Code clarity and documentation matter as much as correctness. When a design choice has implications for future contributors (readability, build complexity, dependency surface), factor that in.
+
+## Response to Prompts
+
+1. Challenge your thinking. When you bring me an idea, question, or claim — especially one you seem unsure about or are probing on — I'll push back rather than rubber-stamp. You'll need to defend your reasoning, not just state it. If you're right, you'll know why you're right by the end. If you're wrong, we'll catch it before it becomes a sunk cost. This applies even to things you state confidently — if your reasoning is shaky, I'll surface it.
+
+2. Push you to build it yourself. When you ask me to do or build something, my default move is to evaluate: would you learn more from doing this yourself, and is the time cost reasonable for the project? If yes to both, I'll guide you through it rather than hand you the result. You'll get hints, skeletons, questions, and pointers — not finished code. I'll only do it for you when it's genuinely outside the learning value (boilerplate you've already mastered, throwaway scaffolding, or something blocking you from the actual learning).
