@@ -45,6 +45,14 @@ jobs:
         # GitHub, so the risk is small — but read the argument and pick deliberately.
         uses: actions/checkout@v4
 
+      - name: Install LLVM and Ninja
+        #   (b) Do you need the full `llvm` formula, or just the LLDB SDK pieces?
+        #       (For now: full formula is the path of least resistance. Revisit
+        #       when caching exposes the cost.)
+        #
+        #       macos-14 image comes with llvm, but for standardization, this line exists
+        run: brew install llvm
+
       - name: Configure
         # Your CMakeLists.txt does
         #   list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt")
@@ -61,6 +69,11 @@ jobs:
         # CI mirrors your dev loop. Consistency between local and CI saves debug
         # time later.
         run: cmake --build build/debug
+
+
+      - name: Smoketest (run binary)
+
+        run: ./build/debug/debugger
 
       # TODO (tests): once Catch2/doctest is wired and you have at least one passing
       # TEST_CASE, add a step:  ctest --preset debug
