@@ -24,7 +24,7 @@ I'm a junior software engineer finishing a CS degree. I have strong web developm
 - **TUI library:** `ftxui` (chosen for being C++-idiomatic and easier to learn than `notcurses`).
 - **Backend:** LLDB via the `liblldb` C++ API (`SBDebugger`, `SBTarget`, `SBProcess`, etc.), used in-process. Linked against Homebrew's `llvm` formula (`/opt/homebrew/opt/llvm`) on Apple Silicon — *not* the Command Line Tools framework, which does not ship public headers. GDB and an MI-protocol path are post-v1.0 and not a current concern — do not abstract for them prematurely.
 - **Dependencies:** Keep them minimal. Vendored or fetched via CMake's `FetchContent`. No package manager (Conan/vcpkg) for v1.0.
-- **Testing:** Catch2 or doctest for unit tests. The wrapper layer around `liblldb` — lifetime/ownership of SB-objects, error propagation from `SBError`, and translating LLDB's async event broadcaster into our event loop — is the most fragile area and needs focused coverage.
+- **Testing:** doctest for unit tests, pulled in via CMake's `FetchContent`. Chosen over Catch2 for its faster compile speed, which matters for a tight inner-loop during development. The wrapper layer around `liblldb` — lifetime/ownership of SB-objects, error propagation from `SBError`, and translating LLDB's async event broadcaster into our event loop — is the most fragile area and needs focused coverage.
 - **Tooling:** clang-format, clang-tidy, AddressSanitizer/UBSan in debug builds, ccache for fast iteration. CI on GitHub Actions for macOS (Apple Silicon).
 - **No web anything.** No JavaScript, no Electron, no embedded browser, no HTTP servers. This is a hard constraint.
 
