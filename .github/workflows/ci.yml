@@ -59,7 +59,7 @@ jobs:
       #   (b) different runner — format-check doesn't need LLVM, can use a much
       #       faster ubuntu-latest runner with just `clang-format` installed,
       #   (c) cleaner required-check granularity for branch protection.
-  build:
+  lint:
     name: Linter (Ubuntu v.24.04)
     runs-on: ubuntu-24.04
 
