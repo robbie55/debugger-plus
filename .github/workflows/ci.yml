@@ -67,8 +67,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Confirm clang-format
-        run: clang-format --version
+      - name: Clang Format
+        run: git ls-files -z '*.cpp' '*.h' '*.hpp' | xargs -0 clang-format --dry-run --Werror
       # TODO (release matrix): add a sibling job that builds --preset release. Two
       # ways to express it:
       #   (1) duplicate the job with `--preset release`,

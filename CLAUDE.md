@@ -19,7 +19,7 @@ I'm a junior software engineer finishing a CS degree. I have strong web developm
 
 ## Technical Stack and Constraints
 
-- **Language:** C++17 minimum, C++20 where it clearly helps (concepts, ranges, `std::format` if available).
+- **Language:** C++20.
 - **Build system:** CMake with presets. I want to learn modern CMake properly (target-based, no global flags).
 - **TUI library:** `ftxui` (chosen for being C++-idiomatic and easier to learn than `notcurses`).
 - **Backend:** LLDB via the `liblldb` C++ API (`SBDebugger`, `SBTarget`, `SBProcess`, etc.), used in-process. Linked against Homebrew's `llvm` formula (`/opt/homebrew/opt/llvm`) on Apple Silicon — *not* the Command Line Tools framework, which does not ship public headers. GDB and an MI-protocol path are post-v1.0 and not a current concern — do not abstract for them prematurely.
