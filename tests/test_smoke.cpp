@@ -5,7 +5,7 @@ namespace {
   int Factorial(int n) { return n <= 1 ? n : Factorial(n - 1) * n; }
 
   TEST_CASE("Testing the Factorial function") {
-    CHECK(Factorial(0) == 0);
+    CHECK(Factorial(0) == 1);
     CHECK(Factorial(1) == 1);
     CHECK(Factorial(2) == 2);
     CHECK(Factorial(3) == 6);
