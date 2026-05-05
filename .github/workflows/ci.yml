@@ -11,30 +11,14 @@ name: CI
 # protection later.
 
 on:
-  # Triggering on `push` to main only (not feature branches) avoids the
-  # double-fire that happens when a PR's source branch is in this same repo.
-  # PRs themselves are covered by the `pull_request` trigger below.
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  # RESEARCH: by default `pull_request` fires on opened/synchronize/reopened.
-  # Read `on.pull_request.types` in the GitHub Actions docs if you ever want to
-  # also run on `ready_for_review` (useful if you use draft PRs) or skip on
-  # `closed`. Don't add types speculatively — wait until you actually need one.
 
 jobs:
-  # RESEARCH: jobs run on separate fresh VMs and execute in parallel by default.
-  # Use `needs: [other_job]` only when there's a real ordering dependency
-  # (e.g. "build first, then upload artifact"). Parallel-by-default is what
-  # makes a multi-job pipeline fast.
   build:
     name: Build (debug, macOS arm64)
-    # RESEARCH: macos-14 = Apple Silicon (M1), macos-13 = Intel. Your project
-    # targets Apple Silicon per CLAUDE.md. Read the runner image manifest at
-    # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
-    # to see what's preinstalled — specifically check Ninja, CMake, ccache,
-    # and whether any LLVM is already on PATH (and if so, what version).
     runs-on: macos-14
 
     steps:
@@ -45,29 +29,13 @@ jobs:
         # GitHub, so the risk is small — but read the argument and pick deliberately.
         uses: actions/checkout@v4
 
-      - name: Install LLVM and Ninja
-        #   (b) Do you need the full `llvm` formula, or just the LLDB SDK pieces?
-        #       (For now: full formula is the path of least resistance. Revisit
-        #       when caching exposes the cost.)
-        #
-        #       macos-14 image comes with llvm, but for standardization, this line exists
+      - name: Install LLVM
         run: brew install llvm
 
       - name: Configure
-        # Your CMakeLists.txt does
-        #   list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt")
-        # which makes find_package(LLVM) work without any env setup here.
-        # RESEARCH: verify that holds on a clean runner with no prior CMake state.
-        # If configure fails to find LLVM in CI, the right fix is in CMakeLists,
-        # not papering over it with `env: CMAKE_PREFIX_PATH=...` in this workflow.
         run: cmake --preset debug
 
       - name: Build
-        # RESEARCH: `cmake --build <dir>` vs `cmake --build --preset <name>`.
-        # The preset form requires a matching `buildPresets` entry — you have one
-        # for debug. Pick whichever spelling matches how you'd run it locally so
-        # CI mirrors your dev loop. Consistency between local and CI saves debug
-        # time later.
         run: cmake --build build/debug
 
 
@@ -82,6 +50,10 @@ jobs:
       # Don't preempt the split — single-job is simpler and faster than artifact
       # upload/download for fast test suites.
 
+      - name: Run Tests
+
+        run: ctest --preset debug
+        
       # TODO (format/tidy): SEPARATE JOB, not a step here. Reasons:
       #   (a) parallelism — runs alongside build instead of after,
       #   (b) different runner — format-check doesn't need LLVM, can use a much
