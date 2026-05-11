@@ -19,7 +19,7 @@ on:
 jobs:
 
   build-matrix:
-    name: Build Matrix (Debug & Release @macos-14)
+    name: Build Matrix
     strategy:
       fail-fast: false # makes for easier debugging across builds
       matrix:
@@ -31,7 +31,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Compute Cache Key
+        id: llvm-version
+        run: echo "cache_key=$(brew info --json=v2 llvm | jq -r '.formulae[0].versions.stable')" >> $GITHUB_OUTPUT
+
+      - name: Cache LLVM
+        id: cache-llvm
+        uses: actions/cache@v5
+        with:
+          path: |
+            /opt/homebrew/Cellar/llvm/${{ steps.llvm-version.outputs.cache_key }}/
+            /opt/homebrew/opt/llvm
+
+          key: ${{ runner.os }}-llvm-${{ steps.llvm-version.outputs.cache_key }}
+
+
       - name: Install LLVM
+        if: ${{ steps.cache-llvm.outputs.cache-hit != 'true' }}
         run: brew install llvm
 
       - name: Configure
@@ -50,49 +66,6 @@ jobs:
         run: ctest --preset ${{ matrix.preset }}
 
 
-  # build:
-  #   name: Build (debug, macOS arm64)
-  #   runs-on: macos-14
-  #
-  #   steps:
-  #     - name: Checkout
-  #       # RESEARCH: pinning `@v4` (a moving tag) vs pinning to a full SHA. The
-  #       # OpenSSF "Securing Workflows" guide recommends SHA pins for third-party
-  #       # actions because tags can be re-pointed. actions/checkout is first-party
-  #       # GitHub, so the risk is small — but read the argument and pick deliberately.
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Install LLVM
-  #       run: brew install llvm
-  #
-  #     - name: Configure
-  #       run: cmake --preset debug
-  #
-  #     - name: Build
-  #       run: cmake --build build/debug
-  #
-  #
-  #     - name: Smoketest (run binary)
-  #
-  #       run: ./build/debug/debugger
-  #
-  #     # TODO (tests): once Catch2/doctest is wired and you have at least one passing
-  #     # TEST_CASE, add a step:  ctest --preset debug
-  #     # If tests get slow enough to be worth parallelizing, split this off into its
-  #     # own job that `needs: build` and downloads the build dir as an artifact.
-  #     # Don't preempt the split — single-job is simpler and faster than artifact
-  #     # upload/download for fast test suites.
-  #
-  #     - name: Run Tests
-  #
-  #       run: ctest --preset debug
-  #
-  #     # TODO (format/tidy): SEPARATE JOB, not a step here. Reasons:
-  #     #   (a) parallelism — runs alongside build instead of after,
-  #     #   (b) different runner — format-check doesn't need LLVM, can use a much
-  #     #       faster ubuntu-latest runner with just `clang-format` installed,
-  #     #   (c) cleaner required-check granularity for branch protection.
-
   lint:
     name: Linter (Ubuntu v.24.04)
     runs-on: ubuntu-24.04
@@ -103,7 +76,6 @@ jobs:
 
       - name: Clang Format
         run: git ls-files -z '*.cpp' '*.h' '*.hpp' | xargs -0 clang-format --dry-run --Werror
-
 
 
       # TODO (caching): three layers, in order of payoff. Add LAST, after the
