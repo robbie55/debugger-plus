@@ -49,6 +49,12 @@
       "configurePreset": "debug",
       "description": "Runs ctest against the debug build. Tests live in tests/ and are registered via doctest_discover_tests; doctest is pulled in via FetchContent. See CLAUDE.md for the framework rationale (compile speed for tight inner-loop iteration).",
       "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "description": "Runs ctest against the release build. Tests live in tests/ and are registered via doctest_discover_tests; doctest is pulled in via FetchContent. See CLAUDE.md for the framework rationale (compile speed for tight inner-loop iteration).",
+      "output": { "outputOnFailure": true }
     }
   ],
 

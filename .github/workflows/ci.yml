@@ -17,48 +17,82 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    name: Build (debug, macOS arm64)
-    runs-on: macos-14
+
+  build-matrix:
+    name: Build Matrix (Debug & Release @macos-14)
+    strategy:
+      fail-fast: false # makes for easier debugging across builds
+      matrix:
+        os: [ macos-14 ] # potentially add additional os'
+        preset: [debug, release]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
-        # RESEARCH: pinning `@v4` (a moving tag) vs pinning to a full SHA. The
-        # OpenSSF "Securing Workflows" guide recommends SHA pins for third-party
-        # actions because tags can be re-pointed. actions/checkout is first-party
-        # GitHub, so the risk is small — but read the argument and pick deliberately.
         uses: actions/checkout@v4
 
       - name: Install LLVM
         run: brew install llvm
 
       - name: Configure
-        run: cmake --preset debug
+        run: cmake --preset ${{ matrix.preset }}
 
       - name: Build
-        run: cmake --build build/debug
+        run: cmake --build build/${{ matrix.preset }}
 
 
       - name: Smoketest (run binary)
 
-        run: ./build/debug/debugger
-
-      # TODO (tests): once Catch2/doctest is wired and you have at least one passing
-      # TEST_CASE, add a step:  ctest --preset debug
-      # If tests get slow enough to be worth parallelizing, split this off into its
-      # own job that `needs: build` and downloads the build dir as an artifact.
-      # Don't preempt the split — single-job is simpler and faster than artifact
-      # upload/download for fast test suites.
+        run: ./build/${{ matrix.preset }}/debugger
 
       - name: Run Tests
 
-        run: ctest --preset debug
-        
-      # TODO (format/tidy): SEPARATE JOB, not a step here. Reasons:
-      #   (a) parallelism — runs alongside build instead of after,
-      #   (b) different runner — format-check doesn't need LLVM, can use a much
-      #       faster ubuntu-latest runner with just `clang-format` installed,
-      #   (c) cleaner required-check granularity for branch protection.
+        run: ctest --preset ${{ matrix.preset }}
+
+
+  # build:
+  #   name: Build (debug, macOS arm64)
+  #   runs-on: macos-14
+  #
+  #   steps:
+  #     - name: Checkout
+  #       # RESEARCH: pinning `@v4` (a moving tag) vs pinning to a full SHA. The
+  #       # OpenSSF "Securing Workflows" guide recommends SHA pins for third-party
+  #       # actions because tags can be re-pointed. actions/checkout is first-party
+  #       # GitHub, so the risk is small — but read the argument and pick deliberately.
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Install LLVM
+  #       run: brew install llvm
+  #
+  #     - name: Configure
+  #       run: cmake --preset debug
+  #
+  #     - name: Build
+  #       run: cmake --build build/debug
+  #
+  #
+  #     - name: Smoketest (run binary)
+  #
+  #       run: ./build/debug/debugger
+  #
+  #     # TODO (tests): once Catch2/doctest is wired and you have at least one passing
+  #     # TEST_CASE, add a step:  ctest --preset debug
+  #     # If tests get slow enough to be worth parallelizing, split this off into its
+  #     # own job that `needs: build` and downloads the build dir as an artifact.
+  #     # Don't preempt the split — single-job is simpler and faster than artifact
+  #     # upload/download for fast test suites.
+  #
+  #     - name: Run Tests
+  #
+  #       run: ctest --preset debug
+  #
+  #     # TODO (format/tidy): SEPARATE JOB, not a step here. Reasons:
+  #     #   (a) parallelism — runs alongside build instead of after,
+  #     #   (b) different runner — format-check doesn't need LLVM, can use a much
+  #     #       faster ubuntu-latest runner with just `clang-format` installed,
+  #     #   (c) cleaner required-check granularity for branch protection.
+
   lint:
     name: Linter (Ubuntu v.24.04)
     runs-on: ubuntu-24.04
@@ -69,12 +103,8 @@ jobs:
 
       - name: Clang Format
         run: git ls-files -z '*.cpp' '*.h' '*.hpp' | xargs -0 clang-format --dry-run --Werror
-      # TODO (release matrix): add a sibling job that builds --preset release. Two
-      # ways to express it:
-      #   (1) duplicate the job with `--preset release`,
-      #   (2) use `strategy.matrix` to parameterize over preset names.
-      # Research the matrix syntax and decide. Two presets is right at the boundary
-      # where matrix starts to pay off.
+
+
 
       # TODO (caching): three layers, in order of payoff. Add LAST, after the
       # uncached workflow is green — caching bugs look like flakes and are
