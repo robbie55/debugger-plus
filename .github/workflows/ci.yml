@@ -35,6 +35,7 @@ jobs:
         id: llvm-version
         run: echo "cache_key=$(brew info --json=v2 llvm | jq -r '.formulae[0].versions.stable')" >> $GITHUB_OUTPUT
 
+        # arbitrary change to trigger cache
       - name: Cache LLVM
         id: cache-llvm
         uses: actions/cache@v5
