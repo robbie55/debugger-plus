@@ -1,15 +1,4 @@
-# RESEARCH: GitHub Actions reads every YAML file under .github/workflows/ as an
-# independent workflow. When does splitting into multiple files help vs hurt?
-# (Hint: think about triggers, required-status-checks for branch protection, and
-# the `permissions:` scope — narrower-scoped workflows are easier to reason about
-# from a security standpoint.)
-
 name: CI
-# RESEARCH: this `name` shows in the Actions tab UI. Branch protection's
-# "required status checks", however, references JOB names (`build` below), not
-# workflow names. Worth knowing now so it isn't a surprise when you wire branch
-# protection later.
-
 on:
   push:
     branches: [main]
@@ -35,7 +24,6 @@ jobs:
         id: llvm-version
         run: echo "cache_key=$(brew info --json=v2 llvm | jq -r '.formulae[0].versions.stable')" >> $GITHUB_OUTPUT
 
-        # arbitrary change to trigger cache
       - name: Cache LLVM
         id: cache-llvm
         uses: actions/cache@v5
@@ -77,15 +65,3 @@ jobs:
 
       - name: Clang Format
         run: git ls-files -z '*.cpp' '*.h' '*.hpp' | xargs -0 clang-format --dry-run --Werror
-
-
-      # TODO (caching): three layers, in order of payoff. Add LAST, after the
-      # uncached workflow is green — caching bugs look like flakes and are
-      # exhausting to debug:
-      #   1. Homebrew LLVM cellar — biggest win (~5min/run). Cache /opt/homebrew/Cellar/llvm
-      #      and /opt/homebrew/opt/llvm, key on the brew formula version.
-      #   2. ccache — significant once you have real source. Cache the ccache dir,
-      #      key on compiler version + a hash of source files (so a code change
-      #      doesn't invalidate the whole cache, just the affected objects).
-      #   3. CMake `_deps/` directory — small now, matters once FetchContent pulls
-      #      ftxui. Key on a hash of CMakeLists.txt.
