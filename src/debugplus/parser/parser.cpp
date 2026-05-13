@@ -1,4 +1,4 @@
-#include "Parser.h"
+#include "parser.h"
 
 #include <iostream>
 
@@ -10,20 +10,27 @@ namespace {
     switch (user_input) {
       case 'r':
         cmd = parser::kRun;
+        break;
       case 'c':
         cmd = parser::kContinue;
+        break;
       case 's':
         cmd = parser::kStep;
+        break;
       case 'n':
         cmd = parser::kNext;
+        break;
       case 'b':
         cmd = parser::kBreak;
+        break;
       case 'p':
         cmd = parser::kPrint;
+        break;
       case 'q':
         cmd = parser::kQuit;
-      default: {
-      }
+        break;
+      default:
+        break;
     }
 
     return in;

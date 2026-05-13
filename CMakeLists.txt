@@ -28,22 +28,14 @@ target_compile_options(project_warnings INTERFACE
 
 enable_testing()
 
+# add core lib
+add_subdirectory(src/debugplus)
+
 # add tests dir
-add_subdirectory(./tests)
+add_subdirectory(tests)
 
-# build
-add_executable(debugger
-  main.cpp
-)
-
-# link against llvm libs
-target_include_directories(debugger PRIVATE ${LLVM_INCLUDE_DIRS})
-
-target_link_libraries(debugger PRIVATE ${LLDB_LIBRARY})
+add_executable(debugger src/main.cpp)
+target_link_libraries(debugger PRIVATE debugplus_core)
 
 # link against project_warnings
 target_link_libraries(debugger PRIVATE project_warnings)
-
-# target compile directives
-target_compile_features(debugger PRIVATE cxx_std_20)
-target_compile_definitions(debugger PRIVATE ${LLVM_DEFINITIONS_LIST})
