@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.23)
 project(debug-plus)
 
-# append homebrew path to prefix search
-list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt")
+# prepend homebrew path to prefix search, use llvm directly
+# list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt")
+list(PREPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/llvm")
 
 # find LLVM API
 find_package(LLVM REQUIRED CONFIG)
