@@ -32,7 +32,9 @@ enable_testing()
 add_subdirectory(./tests)
 
 # build
-add_executable(debugger main.cpp)
+add_executable(debugger
+  main.cpp
+)
 
 # link against llvm libs
 target_include_directories(debugger PRIVATE ${LLVM_INCLUDE_DIRS})
