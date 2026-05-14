@@ -1,7 +1,12 @@
 #pragma once
 
-namespace parser {
-  enum DebugCmd : unsigned char { kRun, kContinue, kStep, kNext, kBreak, kPrint, kQuit };
+#include <string_view>
+#include <vector>
 
-  DebugCmd GetInput();
+#include "debugplus/actions/actions.h"
+
+namespace parser {
+  actions::Action Parse();
+  std::vector<std::string_view> Tokenize(std::string_view);
+  actions::Action Dispatch(const std::vector<std::string_view>& tokens);
 }  // namespace parser
