@@ -3,6 +3,7 @@
 #include <cassert>
 #include <string_view>
 
+#include "actions/actions.h"
 #include "lldb/API/SBDebugger.h"
 
 class DebugSession {
@@ -11,6 +12,8 @@ class DebugSession {
   lldb::SBTarget _target;
   lldb::SBProcess _process;
   // lldb::SBListener _listener;
+
+  bool _quit_requested{false};
 
  public:
   // move-no copy, wrapper serves as the reigns for a single session
@@ -24,5 +27,10 @@ class DebugSession {
 
   explicit DebugSession(std::string_view exe_path);
 
-  void Launch();
+  [[nodiscard]] bool ShouldQuit() const { return _quit_requested; };
+  void Quit() { _quit_requested = true; };
+
+  void Act(const actions::Action& user_action);
+  void Run();
+  void Break(const actions::Break& break_action);
 };
