@@ -30,6 +30,7 @@ class DebugSession {
   [[nodiscard]] bool ShouldQuit() const { return _quit_requested; };
   void Quit() { _quit_requested = true; };
 
-  void Launch();
-  void Act(actions::Action user_action);
+  void Act(const actions::Action& user_action);
+  void Run();
+  void Break(const actions::Break& break_action);
 };

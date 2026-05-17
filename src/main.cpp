@@ -18,7 +18,6 @@ namespace {
       LLDBContext lldb_runtime{};
 
       DebugSession session{argv[1]};
-      session.Launch();
 
       while (!session.ShouldQuit()) {
         std::cout << "(debugplus) ";

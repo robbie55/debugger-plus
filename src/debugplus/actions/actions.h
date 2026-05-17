@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
+#include <string>
 #include <variant>
 
 namespace actions {
@@ -9,10 +11,11 @@ namespace actions {
   struct Step {};
   struct Next {};
   struct Break {
-    std::size_t line{};
+    uint32_t line{};
+    std::string file;
   };
   struct Print {
-    std::size_t variable{};
+    std::uint32_t variable{};
   };
   struct Quit {};
   struct Unknown {};

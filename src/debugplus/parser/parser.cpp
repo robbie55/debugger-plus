@@ -1,8 +1,10 @@
 #include "parser.h"
 
 #include <cassert>
+#include <cctype>
 #include <charconv>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <limits>
 #include <optional>
@@ -18,8 +20,8 @@ namespace {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
 
-  std::optional<size_t> GetNumericArg(std::string_view arg) {
-    size_t numeric_arg{};
+  std::optional<uint32_t> GetNumericArg(std::string_view arg) {
+    uint32_t numeric_arg{};
     auto [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.size(), numeric_arg);
 
     if (ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
@@ -30,16 +32,36 @@ namespace {
   }
 
   actions::Action ParseBreak(std::span<const std::string_view> args) {
-    if (args.size() < 2) {
+    if (args.size() != 2) {
       return actions::Action{actions::Unknown{}};
     }
 
-    std::optional<size_t> numeric_arg{GetNumericArg(args[1])};
-    if (numeric_arg == std::nullopt) {
+    // second token should look like 'main.cpp:10'
+    std::string_view second_token{args[1]};
+    size_t colon_index{second_token.find(':')};
+
+    // guard against missing colon
+    if (colon_index == std::string_view::npos) {
       return actions::Action{actions::Unknown{}};
     }
 
-    return actions::Action{actions::Break{*numeric_arg}};
+    if (colon_index == 0) {
+      return actions::Action{actions::Unknown{}};
+    }
+
+    if (colon_index == second_token.size() - 1) {
+      return actions::Action{actions::Unknown{}};
+    }
+
+    std::string_view file_sv{second_token.substr(0, colon_index)};
+    std::string_view numeric_arg_sv{second_token.substr(colon_index + 1)};
+
+    std::optional<uint32_t> numeric_arg{GetNumericArg(numeric_arg_sv)};
+    if (!numeric_arg) {
+      return actions::Action{actions::Unknown{}};
+    }
+
+    return actions::Action{actions::Break{.line = *numeric_arg, .file = std::string(file_sv)}};
   }
 
   actions::Action ParsePrint(std::span<const std::string_view> args) {
@@ -47,7 +69,7 @@ namespace {
       return actions::Action{actions::Unknown{}};
     }
 
-    std::optional<size_t> numeric_arg{GetNumericArg(args[1])};
+    std::optional<uint32_t> numeric_arg{GetNumericArg(args[1])};
     if (numeric_arg == std::nullopt) {
       return actions::Action{actions::Unknown{}};
     }
