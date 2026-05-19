@@ -17,6 +17,16 @@ find_library(LLDB_LIBRARY
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in:${LLVM_DIR}")
 
+add_library(
+  LLDB::LLDB
+  SHARED
+  IMPORTED
+)
+
+set_target_properties(LLDB::LLDB PROPERTIES
+  IMPORTED_LOCATION ${LLDB_LIBRARY}
+)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})

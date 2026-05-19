@@ -9,7 +9,7 @@ target_include_directories(debugplus_core
 )
 
 # Propagate dependencies + standard
-target_link_libraries(debugplus_core PUBLIC ${LLDB_LIBRARY})
+target_link_libraries(debugplus_core PUBLIC LLDB::LLDB)
 target_link_libraries(debugplus_core PRIVATE project_warnings)
 target_compile_features(debugplus_core PUBLIC cxx_std_20)
 target_compile_definitions(debugplus_core PUBLIC ${LLVM_DEFINITIONS_LIST})
