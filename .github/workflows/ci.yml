@@ -35,6 +35,9 @@ jobs:
           key: ${{ runner.os }}-llvm-${{ steps.llvm-version.outputs.cache_key }}
 
 
+      - name: Install LLVM Deps
+        run: brew install $(brew deps llvm) --formula
+
       - name: Install LLVM
         if: ${{ steps.cache-llvm.outputs.cache-hit != 'true' }}
         run: brew install llvm
@@ -45,13 +48,7 @@ jobs:
       - name: Build
         run: cmake --build build/${{ matrix.preset }}
 
-
-      # - name: Smoketest (run binary)
-      #
-      #   run: ./build/${{ matrix.preset }}/debugger
-
       - name: Run Tests
-
         run: ctest --preset ${{ matrix.preset }}
 
 

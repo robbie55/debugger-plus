@@ -12,7 +12,13 @@ FetchContent_MakeAvailable(doctest)
 list(APPEND CMAKE_MODULE_PATH ${doctest_SOURCE_DIR}/scripts/cmake)
 include(doctest)
 
-add_executable(tests test_smoke.cpp)
-target_link_libraries(tests PRIVATE doctest::doctest project_warnings)
+add_executable(tests 
+  debugplus/parser/test_parser.cpp
+)
+
+target_link_libraries(tests PRIVATE debugplus_core)
+target_link_libraries(tests PRIVATE doctest::doctest_with_main project_warnings)
+
 target_compile_features(tests PRIVATE cxx_std_20)
+
 doctest_discover_tests(tests)
