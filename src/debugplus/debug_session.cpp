@@ -1,11 +1,18 @@
 #include "debug_session.h"
 
 #include <cassert>
+#include <ios>
+#include <iostream>
 #include <stdexcept>
 #include <type_traits>
 #include <variant>
 
+#include "lldb/API/SBBreakpoint.h"
+#include "lldb/API/SBBreakpointLocation.h"
 #include "lldb/API/SBDefines.h"
+// #include "lldb/API/SBError.h "
+#include "lldb/API/SBProcess.h"
+#include "lldb/API/SBTarget.h"
 
 DebugSession::DebugSession(std::string_view exe_path)
     : _debugger{lldb::SBDebugger::Create()},
@@ -27,6 +34,7 @@ void DebugSession::Run() {
     throw std::runtime_error("Process failed to launch");
   }
 }
+
 void DebugSession::Break(const actions::Break& break_action) {
   lldb::SBBreakpoint bp{
       _target.BreakpointCreateByLocation(break_action.file.c_str(), break_action.line)};
@@ -35,7 +43,10 @@ void DebugSession::Break(const actions::Break& break_action) {
     throw std::runtime_error("Invalid Breakpoint");
   }
 
-  assert(bp && bp.GetNumLocations() == 1 && "Invalid Breakpoint: More than one location");
+  for (uint32_t i{}; i < bp.GetNumLocations(); ++i) {
+    lldb::SBBreakpointLocation loc{bp.GetLocationAtIndex(i)};
+    std::cout << "BP Location set at: 0x" << std::hex << loc.GetLoadAddress() << std::dec << '\n';
+  }
 
   // TODO: Figure out what to do from here
   // lldb::SBBreakpointLocation loc{};

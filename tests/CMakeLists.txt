@@ -14,11 +14,10 @@ include(doctest)
 
 add_executable(tests 
   debugplus/parser/test_parser.cpp
-  test_smoke.cpp
 )
 
 target_link_libraries(tests PRIVATE debugplus_core)
-target_link_libraries(tests PRIVATE doctest::doctest project_warnings)
+target_link_libraries(tests PRIVATE doctest::doctest_with_main project_warnings)
 
 target_compile_features(tests PRIVATE cxx_std_20)
 
