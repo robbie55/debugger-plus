@@ -45,13 +45,7 @@ jobs:
       - name: Build
         run: cmake --build build/${{ matrix.preset }}
 
-
-      # - name: Smoketest (run binary)
-      #
-      #   run: ./build/${{ matrix.preset }}/debugger
-
       - name: Run Tests
-
         run: ctest --preset ${{ matrix.preset }}
 
 
