@@ -117,6 +117,10 @@ namespace parser {
 
     std::vector<std::string_view> tokens{Tokenize(line)};
 
+    if (tokens.empty()) {
+      return actions::Action{std::monostate{}};
+    }
+
     return Dispatch(tokens);
   }
 
