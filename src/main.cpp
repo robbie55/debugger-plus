@@ -8,6 +8,22 @@
 #include "debugplus/parser/parser.h"
 
 namespace {
+  void PrintState(DebugSession& session) {
+    SessionSnapshot snapshot{session.GetSnapshot()};
+
+    std::cout << snapshot.state << '\n';
+    std::cout << snapshot.stop_reason << '\n';
+
+    if (snapshot.frame) {
+      FrameInfo frame_info{*snapshot.frame};
+
+      std::cout << frame_info.file_path << '\n';
+      std::cout << frame_info.function_name << '\n';
+      std::cout << frame_info.line << '\n';
+      std::cout << frame_info.pc << '\n';
+    }
+  }
+
   int Run(int argc, std::span<char*> argv) {
     if (argc != 2) {
       std::cout << "Invalid Usage, program expects: './debugger {path_to_exe}'\n";
@@ -24,6 +40,8 @@ namespace {
 
         actions::Action user_action{parser::Parse()};
         session.Act(user_action);
+
+        PrintState(session);
       }
 
       return 0;
