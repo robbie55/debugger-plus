@@ -8,6 +8,7 @@
 #include "debugplus/parser/parser.h"
 
 namespace {
+
   int Run(int argc, std::span<char*> argv) {
     if (argc != 2) {
       std::cout << "Invalid Usage, program expects: './debugger {path_to_exe}'\n";
@@ -24,6 +25,8 @@ namespace {
 
         actions::Action user_action{parser::Parse()};
         session.Act(user_action);
+
+        session.PrintState();
       }
 
       return 0;

@@ -27,10 +27,16 @@ class DebugSession {
 
   explicit DebugSession(std::string_view exe_path);
 
+  void PrintState();
+
   [[nodiscard]] bool ShouldQuit() const { return _quit_requested; };
+  bool HasProcessExited();
   void Quit() { _quit_requested = true; };
 
   void Act(const actions::Action& user_action);
   void Run();
   void Break(const actions::Break& break_action);
+  void Next();
+  void Continue();
+  void Step();
 };
