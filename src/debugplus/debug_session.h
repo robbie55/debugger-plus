@@ -1,26 +1,10 @@
 #pragma once
 
 #include <cassert>
-#include <cstdint>
-#include <optional>
 #include <string_view>
 
 #include "actions/actions.h"
 #include "lldb/API/SBDebugger.h"
-#include "lldb/lldb-enumerations.h"
-
-struct FrameInfo {
-  std::string function_name;
-  std::string file_path;
-  uint32_t line{};
-  uint64_t pc{};
-};
-
-struct SessionSnapshot {
-  lldb::StateType state{};
-  lldb::StopReason stop_reason{};
-  std::optional<FrameInfo> frame;
-};
 
 class DebugSession {
  private:
@@ -43,9 +27,10 @@ class DebugSession {
 
   explicit DebugSession(std::string_view exe_path);
 
-  SessionSnapshot GetSnapshot();
+  void PrintState();
 
   [[nodiscard]] bool ShouldQuit() const { return _quit_requested; };
+  bool HasProcessExited();
   void Quit() { _quit_requested = true; };
 
   void Act(const actions::Action& user_action);
